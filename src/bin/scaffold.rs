@@ -17,7 +17,7 @@ pub fn part_two(input: &str) -> Option<u32> {
 }
 
 fn main() {
-    let input = &advent_of_code::read_file("inputs", DAY);
+    let input = &advent_of_code::read_file("inputs", YEAR, DAY);
     advent_of_code::solve!(1, part_one, input);
     advent_of_code::solve!(2, part_two, input);
 }
@@ -28,22 +28,17 @@ mod tests {
 
     #[test]
     fn test_part_one() {
-        let input = advent_of_code::read_file("examples", DAY);
+        let input = advent_of_code::read_file("examples", YEAR, DAY);
         assert_eq!(part_one(&input), None);
     }
 
     #[test]
     fn test_part_two() {
-        let input = advent_of_code::read_file("examples", DAY);
+        let input = advent_of_code::read_file("examples", YEAR, DAY);
         assert_eq!(part_two(&input), None);
     }
 }
 "###;
-
-fn parse_args() -> Result<u8, pico_args::Error> {
-    let mut args = pico_args::Arguments::from_env();
-    args.free_from_str()
-}
 
 fn safe_create_file(path: &str) -> Result<File, std::io::Error> {
     OpenOptions::new().write(true).create_new(true).open(path)
@@ -54,19 +49,20 @@ fn create_file(path: &str) -> Result<File, std::io::Error> {
 }
 
 fn main() {
-    let day = match parse_args() {
+    let args = match advent_of_code::parse_args() {
         Ok(day) => day,
-        Err(_) => {
-            eprintln!("Need to specify a day (as integer). example: `cargo scaffold 7`");
+        Err(e) => {
+            eprintln!("Failed to process arguments: {}", e);
             process::exit(1);
         }
     };
 
-    let day_padded = format!("{:02}", day);
+    let suffix = format!("{}_{:02}", args.year, args.day);
 
-    let input_path = format!("src/inputs/{}.txt", day_padded);
-    let example_path = format!("src/examples/{}.txt", day_padded);
-    let module_path = format!("src/bin/{}.rs", day_padded);
+    let input_path = format!("src/inputs/{}.txt", suffix);
+    let puzzle_path = format!("src/puzzles/{}.txt", suffix);
+    let example_path = format!("src/examples/{}.txt", suffix);
+    let module_path = format!("src/bin/{}.rs", suffix);
 
     let mut file = match safe_create_file(&module_path) {
         Ok(file) => file,
@@ -76,7 +72,12 @@ fn main() {
         }
     };
 
-    match file.write_all(MODULE_TEMPLATE.replace("DAY", &day.to_string()).as_bytes()) {
+    match file.write_all(
+        MODULE_TEMPLATE
+            .replace("DAY", &args.day.to_string())
+            .replace("YEAR", &args.year.to_string())
+            .as_bytes(),
+    ) {
         Ok(_) => {
             println!("Created module file \"{}\"", &module_path);
         }
@@ -96,6 +97,16 @@ fn main() {
         }
     }
 
+    match create_file(&puzzle_path) {
+        Ok(_) => {
+            println!("Created empty puzzle file \"{}\"", &puzzle_path);
+        }
+        Err(e) => {
+            eprintln!("Failed to create puzzle file: {}", e);
+            process::exit(1);
+        }
+    }
+
     match create_file(&example_path) {
         Ok(_) => {
             println!("Created empty example file \"{}\"", &example_path);
@@ -108,7 +119,6 @@ fn main() {
 
     println!("---");
     println!(
-        "🎄 Type `cargo solve {}` to run your solution.",
-        &day_padded
+        "🎄 Type `cargo solve {} {}` to run your solution.",         args.year, args.day
     );
 }

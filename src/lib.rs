@@ -5,6 +5,7 @@
  */
 use std::env;
 use std::fs;
+use std::process;
 
 pub mod helpers;
 
@@ -41,10 +42,26 @@ macro_rules! solve {
     }};
 }
 
-pub fn read_file(folder: &str, day: u8) -> String {
+pub struct Args {
+    pub year: u16,
+    pub day: u8,
+}
+
+pub fn parse_args() -> Result<Args, pico_args::Error> {
+    let mut args = pico_args::Arguments::from_env();
+    Ok(Args {
+        year: args.free_from_str()?,
+        day: args.free_from_str()?,
+    })
+}
+
+pub fn read_file(folder: &str, year: u16, day: u8) -> String {
     let cwd = env::current_dir().unwrap();
 
-    let filepath = cwd.join("src").join(folder).join(format!("{:02}.txt", day));
+    let filepath = cwd
+        .join("src")
+        .join(folder)
+        .join(format!("{}_{:02}.txt", year, day));
 
     let f = fs::read_to_string(filepath);
     f.expect("could not open input file")
@@ -75,6 +92,38 @@ pub fn parse_exec_time(output: &str) -> f64 {
             }
         }
     })
+}
+
+pub fn run_solution(year: u16, day: u8) -> f64 {
+    let day_padded = format!("{:02}", day);
+    let suffix = format!("{}_{}", year, day_padded);
+
+    let cmd = process::Command::new("cargo")
+        .args(["run", "--release", "--bin", &suffix])
+        .output()
+        .unwrap();
+
+    println!("----------");
+    println!("{}| Day {} |{}", ANSI_BOLD, day, ANSI_RESET);
+    println!("----------");
+
+    let output = String::from_utf8(cmd.stdout).unwrap();
+    let is_empty = output.is_empty();
+
+    println!(
+        "{}",
+        if is_empty {
+            "Not solved."
+        } else {
+            output.trim()
+        }
+    );
+
+    if is_empty {
+        0_f64
+    } else {
+        parse_exec_time(&output)
+    }
 }
 
 /// copied from: https://github.com/rust-lang/rust/blob/1.64.0/library/std/src/macros.rs#L328-L333
