@@ -37,7 +37,7 @@ fn main() {
     let day_padded = format!("{:02}", args.day);
     let suffix = format!("{}_{}", args.year, day_padded);
     let inputs_path = format!("src/inputs/{}.txt", suffix);
-    let puzzles_path = format!("src/puzzles/{}.txt", suffix);
+    let puzzles_path = format!("src/puzzles/{}.md", suffix);
 
     // check if aoc binary exists and is callable.
     if Command::new("aoc").arg("-V").output().is_err() {
