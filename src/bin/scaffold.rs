@@ -87,26 +87,6 @@ fn main() {
         }
     }
 
-    match create_file(&input_path) {
-        Ok(_) => {
-            println!("Created empty input file \"{}\"", &input_path);
-        }
-        Err(e) => {
-            eprintln!("Failed to create input file: {}", e);
-            process::exit(1);
-        }
-    }
-
-    match create_file(&puzzle_path) {
-        Ok(_) => {
-            println!("Created empty puzzle file \"{}\"", &puzzle_path);
-        }
-        Err(e) => {
-            eprintln!("Failed to create puzzle file: {}", e);
-            process::exit(1);
-        }
-    }
-
     match create_file(&example_path) {
         Ok(_) => {
             println!("Created empty example file \"{}\"", &example_path);
@@ -119,6 +99,7 @@ fn main() {
 
     println!("---");
     println!(
-        "🎄 Type `cargo solve {} {}` to run your solution.",         args.year, args.day
+        "🎄 Type `cargo solve {} {}` to run your solution.", 
+       args.year, args.day
     );
 }
