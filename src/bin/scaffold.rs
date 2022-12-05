@@ -59,8 +59,6 @@ fn main() {
 
     let suffix = format!("{}_{:02}", args.year, args.day);
 
-    let input_path = format!("src/inputs/{}.txt", suffix);
-    let puzzle_path = format!("src/puzzles/{}.txt", suffix);
     let example_path = format!("src/examples/{}.txt", suffix);
     let module_path = format!("src/bin/{}.rs", suffix);
 
@@ -100,6 +98,6 @@ fn main() {
     println!("---");
     println!(
         "🎄 Type `cargo solve {} {}` to run your solution.", 
-       args.year, args.day
+        args.year, args.day
     );
 }
