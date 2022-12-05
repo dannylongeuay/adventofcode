@@ -1,42 +1,29 @@
-use std::collections::VecDeque;
+use itertools::Itertools;
 
-pub fn part_one(input: &str) -> Option<u32> {
-    let lines = input.lines();
-    let mut prev: Option<u32> = None;
-    let mut sum: u32 = 0;
-    for line in lines {
-        let cur_depth = line.parse::<u32>().unwrap();
-        if let Some(prev_depth) = prev {
-            if cur_depth > prev_depth {
-                sum += 1;
-            }
-        }
-        prev = Some(cur_depth);
-    }
-    Some(sum)
+pub fn part_one(input: &str) -> Option<usize> {
+    Some(
+        input
+            .lines()
+            .map(|l| l.parse::<usize>().unwrap())
+            .collect_vec()
+            .windows(2)
+            .filter(|win| win[0] < win[1])
+            .collect_vec()
+            .len(),
+    )
 }
 
-pub fn part_two(input: &str) -> Option<u32> {
-    let mut lines = input.lines();
-    let mut prev: Option<u32> = None;
-    let mut sum: u32 = 0;
-    let mut window: VecDeque<u32> = VecDeque::new();
-    while let Some(line) = lines.next() {
-        let cur_depth = line.parse::<u32>().unwrap();
-        window.push_back(cur_depth);
-        if window.len() < 3 {
-            continue;
-        }
-        let sliding_depth: u32 = window.iter().sum();
-        if let Some(prev_depth) = prev {
-            if sliding_depth > prev_depth {
-                sum += 1;
-            }
-        }
-        prev = Some(sliding_depth);
-        window.pop_front();
-    }
-    Some(sum)
+pub fn part_two(input: &str) -> Option<usize> {
+    Some(
+        input
+            .lines()
+            .map(|l| l.parse::<usize>().unwrap())
+            .collect_vec()
+            .windows(4)
+            .filter(|win| win[0] < win[3])
+            .collect_vec()
+            .len(),
+    )
 }
 
 fn main() {
