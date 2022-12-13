@@ -1,27 +1,21 @@
+use itertools::Itertools;
 use std::collections::{HashMap, VecDeque};
 
 pub fn part_one(input: &str) -> Option<usize> {
     let grid = Grid::new(input);
-    find_cost(&grid, grid.start, grid.end)
+    find_cost(&grid, vec![grid.start], grid.end)
 }
 
 pub fn part_two(input: &str) -> Option<usize> {
     let grid = Grid::new(input);
-    let mut min = usize::MAX;
-    for y in 0..grid.height {
-        for x in 0..grid.width {
-            let elevation = grid.get((x, y));
-            if elevation != 0 {
-                continue;
-            }
-            if let Some(cost) = find_cost(&grid, (x, y), grid.end) {
-                if cost < min {
-                    min = cost;
-                }
-            }
-        }
-    }
-    Some(min)
+    let starts: Vec<(isize, isize)> = (0..grid.width)
+        .cartesian_product(0..grid.height)
+        .filter_map(|pos| match grid.get(pos) {
+            0 => Some(pos),
+            _ => None,
+        })
+        .collect();
+    find_cost(&grid, starts, grid.end)
 }
 
 #[derive(Debug)]
@@ -94,11 +88,13 @@ impl Grid {
     }
 }
 
-fn find_cost(grid: &Grid, start: (isize, isize), end: (isize, isize)) -> Option<usize> {
+fn find_cost(grid: &Grid, starts: Vec<(isize, isize)>, end: (isize, isize)) -> Option<usize> {
     let mut queue: VecDeque<(isize, isize)> = VecDeque::new();
     let mut costs: HashMap<(isize, isize), usize> = HashMap::new();
-    queue.push_back(start);
-    costs.insert(start, 0);
+    for start in starts {
+        queue.push_back(start);
+        costs.insert(start, 0);
+    }
     while let Some(current_pos) = queue.pop_front() {
         if current_pos == end {
             break;
