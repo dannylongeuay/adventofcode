@@ -1,38 +1,50 @@
 use anyhow::Error;
 use std::{collections::HashSet, str::FromStr};
 
-pub fn part_one(input: &str) -> Option<u32> {
+pub fn part_one(input: &str) -> Option<i64> {
     let sensors: Vec<Sensor> = input
         .lines()
         .map(|l| Sensor::from_str(l).unwrap())
         .collect();
     // example row
-    let mut row: i32 = 10;
+    let mut row: i64 = 10;
     if sensors.len() > 14 {
         // input row
         row = 2_000_000;
     }
-    let beacons_on_row: HashSet<(i32, i32)> = sensors
+    let beacons_on_row: HashSet<(i64, i64)> = sensors
         .iter()
         .filter(|s| s.beacon.1 == row)
         .map(|s| s.beacon)
         .collect();
     Some(
-        (merged_ranges(&sensors, row)
+        merged_ranges(&sensors, row)
             .iter()
             .fold(0, |acc, r| acc + r.end - r.start + 1)
-            - beacons_on_row.len() as i32) as u32,
+            - beacons_on_row.len() as i64,
     )
 }
 
-pub fn part_two(input: &str) -> Option<u32> {
+const MAX_RANGE: i64 = 4_000_000;
+
+pub fn part_two(input: &str) -> Option<i64> {
+    let sensors: Vec<Sensor> = input
+        .lines()
+        .map(|l| Sensor::from_str(l).unwrap())
+        .collect();
+    for row in 0..=MAX_RANGE {
+        let merged = merged_ranges(&sensors, row);
+        if merged.len() > 1 {
+            return Some((merged[0].end + 1) * MAX_RANGE + row);
+        }
+    }
     None
 }
 
 #[derive(Debug)]
 struct Sensor {
-    loc: (i32, i32),
-    beacon: (i32, i32),
+    loc: (i64, i64),
+    beacon: (i64, i64),
     distance: u32,
 }
 
@@ -54,21 +66,21 @@ impl FromStr for Sensor {
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 struct Range {
-    start: i32,
-    end: i32,
+    start: i64,
+    end: i64,
 }
 
 impl Range {
-    fn new(start: i32, end: i32) -> Self {
+    fn new(start: i64, end: i64) -> Self {
         Range { start, end }
     }
 
-    fn contains(&self, value: i32) -> bool {
+    fn contains(&self, value: i64) -> bool {
         value >= self.start && value <= self.end
     }
 }
 
-fn merged_ranges(sensors: &Vec<Sensor>, row: i32) -> Vec<Range> {
+fn merged_ranges(sensors: &Vec<Sensor>, row: i64) -> Vec<Range> {
     let mut ranges: Vec<Range> = Vec::new();
     let mut merged_ranges: Vec<Range> = Vec::with_capacity(sensors.len());
     for sensor in sensors {
@@ -104,19 +116,19 @@ fn merged_ranges(sensors: &Vec<Sensor>, row: i32) -> Vec<Range> {
     merged_ranges
 }
 
-fn sensor_range(sensor: &Sensor, row: i32) -> Option<Range> {
-    let h = sensor.distance as i32 - (row - sensor.loc.1).abs();
+fn sensor_range(sensor: &Sensor, row: i64) -> Option<Range> {
+    let h = sensor.distance as i64 - (row - sensor.loc.1).abs();
     if h <= 0 {
         return None;
     }
     Some(Range::new(sensor.loc.0 - h, sensor.loc.0 + h))
 }
 
-fn manhattan_distance(a: (i32, i32), b: (i32, i32)) -> u32 {
+fn manhattan_distance(a: (i64, i64), b: (i64, i64)) -> u32 {
     ((b.0 - a.0).abs() + (b.1 - a.1).abs()) as u32
 }
 
-fn parse_coordinate(s: &str) -> (i32, i32) {
+fn parse_coordinate(s: &str) -> (i64, i64) {
     let (first, second) = s.split_once(", ").unwrap();
     let first_terms = first.split_whitespace();
     let second_terms = second.split_whitespace();
@@ -125,8 +137,8 @@ fn parse_coordinate(s: &str) -> (i32, i32) {
     (x_coord, y_coord)
 }
 
-fn parse_axis(s: &str) -> i32 {
-    s.split_once("=").unwrap().1.parse::<i32>().unwrap()
+fn parse_axis(s: &str) -> i64 {
+    s.split_once("=").unwrap().1.parse::<i64>().unwrap()
 }
 
 fn main() {
@@ -148,6 +160,6 @@ mod tests {
     #[test]
     fn test_part_two() {
         let input = advent_of_code::read_file("examples", 2022, 15);
-        assert_eq!(part_two(&input), None);
+        assert_eq!(part_two(&input), Some(56000011));
     }
 }
